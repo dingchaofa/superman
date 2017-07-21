@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <p>按a,d或者左右方向键控制小人左右移动</p>
+    <canvas id="canvas" width="1350" height="400"  style="border:1px solid #ccc;"></canvas>
+    <script src="../easeljs-0.8.2.min.js"></script>
+    <script>
+        !function(){
+            //创建舞台
+            var canvas =document.querySelector('#canvas'),
+            
+            stage = new createjs.Stage(canvas)
+            //console.log(stage)
+            var ground_img = 'http://cdn.gbtags.com/gblibraryassets/libid108/ground.png',
+                stage_height = canvas.height,
+                stage_width = canvas.width,
+                ground_height = 70,
+                spritesheet,//一连串人物动画
+                character_height = 96,
+                character_width = 75,
+                character_siteY = stage_height-ground_height-character_height,//小人的y方向的位置
+                move_left = false,
+                move_right = false,
+                is_jumping = false,
+                x_dis = 5,
+                y_dis = 0,
+                gravity = 1.2//重力系数
+                window.onload =function(){
+                    function setup(){
+                        var ground = new createjs.Bitmap(ground_img)
+                        for(var i=0;i<25;i++){
+                            var ground_floor = ground.clone()
+                            ground_floor.x = i*70
+                            ground_floor.y =stage_height - ground_height
+                            console.log(ground_floor.y)
+                            console.log(ground_floor.x)
+                            stage.addChild(ground_floor)
+                        }
+                        for(var i=1;i<5;i++){
+                            var ground_floor = ground.clone()
+                            ground_floor.x = i*200
+                            ground_floor.y =character_siteY-ground_height
+                            stage.addChild(ground_floor)
+                        }
+                        spritesheet = new createjs.SpriteSheet({
+                            images: ['http://cdn.gbtags.com/gblibraryassets/libid108/charactor.png'],
+                            frames: {
+                                height: 96,
+                                count: 10,
+                                width: 75
+                            },
+                            animations: {
+                                run: [0,9]
+                            }
+                        })
+                        character = new createjs.Sprite(spritesheet)
+                        character.x = 30
+                        character.y = character_siteY
+                        stage.addChild(character)
+
+                        createjs.Ticker.addEventListener('tick',tick)
+                        document.onkeydown = handleKeydown
+                        document.onkeyup = handleKeyup
+                        
+                    }
+                    setup()
+                    function handleKeydown(e){
+                            switch(e.keyCode){
+                                case 37:
+                                case 65:
+                                    move_left = true
+                                    character.play()
+                                    break
+                                case 39:
+                                case 68:
+                                    move_right = true
+                                    character.play()
+                                    break
+                                case 38:
+                                case 87:
+                                    jump()
+                                    break
+                            }
+                        }
+                        function handleKeyup(e){
+                            switch(e.keyCode){
+                                case 37:
+                                case 65:
+                                    move_left = false
+                                    character.gotoAndStop(0)
+                                    break
+                                case 39:
+                                case 68:
+                                    move_right = false
+                                    character.gotoAndStop(0)
+                                    break
+                            }
+                        }
+                        function jump(){
+                            if(!is_jumping){
+                                y_dis = -15
+                                is_jumping =true
+                            }
+                        }
+                        function tick(e){
+                            if(move_left){
+                                character.x -= x_dis
+                                if(character.scaleX>0){
+                                    character.scaleX *= -1
+                                    character.x += character_width
+                                }
+                            } else if(move_right){
+                                character.x += x_dis
+                                if(character.scaleX<0){
+                                    character.scaleX *= -1
+                                    character.x -= character_width
+                                }
+                            }
+                            if(is_jumping){
+                                y_dis +=gravity //抛物线函数
+                                character.y +=y_dis
+                                if(character.y>character_siteY){
+                                    character.y = character_siteY
+                                    is_jumping = false
+                                }
+                            }
+                            //
+                            stage.update();
+                        }
+                }
+            }()
+    </script>
+</body>
+</html>
