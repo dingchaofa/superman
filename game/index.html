@@ -12,6 +12,7 @@
     <script src="../easeljs-0.8.2.min.js"></script>
     <script>
         !function(){
+            
             //创建舞台
             var canvas =document.querySelector('#canvas'),
             
@@ -30,21 +31,20 @@
                 is_jumping = false,
                 x_dis = 5,
                 y_dis = 0,
+                second_groundY = character_siteY-ground_height-character_height,//小人跳到台阶的高
                 gravity = 1.2//重力系数
                 window.onload =function(){
                     function setup(){
                         var ground = new createjs.Bitmap(ground_img)
-                        for(var i=0;i<25;i++){
+                        for(var i=0;i<20;i++){
                             var ground_floor = ground.clone()
                             ground_floor.x = i*70
                             ground_floor.y =stage_height - ground_height
-                            console.log(ground_floor.y)
-                            console.log(ground_floor.x)
                             stage.addChild(ground_floor)
                         }
                         for(var i=1;i<5;i++){
                             var ground_floor = ground.clone()
-                            ground_floor.x = i*200
+                            ground_floor.x = i*210
                             ground_floor.y =character_siteY-ground_height
                             stage.addChild(ground_floor)
                         }
@@ -70,7 +70,9 @@
                         
                     }
                     setup()
+                    var n_jump = 0
                     function handleKeydown(e){
+                        //e.preventDefault()
                             switch(e.keyCode){
                                 case 37:
                                 case 65:
@@ -85,6 +87,7 @@
                                 case 38:
                                 case 87:
                                     jump()
+                                    n_jump ++
                                     break
                             }
                         }
@@ -103,11 +106,27 @@
                             }
                         }
                         function jump(){
-                            if(!is_jumping){
-                                y_dis = -15
-                                is_jumping =true
-                            }
+                                if(n_jump<3){
+                                    y_dis = -15
+                                    is_jumping =true
+                                }
                         }
+                        function jumping(){
+                                    y_dis +=gravity //抛物线函数
+                                    character.y +=y_dis
+                                    if(character.x >=140 && character.x<=210 && y_dis>0 && character.y > second_groundY){
+                                        character.y = second_groundY
+                                        n_jump = 0
+                                        is_jumping = false
+                                        console.log(4444)
+                                    }
+                                    if(character.y>character_siteY){
+                                        character.y = character_siteY
+                                        n_jump = 0
+                                        is_jumping = false
+                                    }
+                                }
+                                
                         function tick(e){
                             if(move_left){
                                 character.x -= x_dis
@@ -115,26 +134,35 @@
                                     character.scaleX *= -1
                                     character.x += character_width
                                 }
+                                
+                                
                             } else if(move_right){
                                 character.x += x_dis
                                 if(character.scaleX<0){
                                     character.scaleX *= -1
                                     character.x -= character_width
                                 }
+                                if(character.y<(character_siteY-60) && (character.x <140 || character.x<=210)){
+                                    var aaa = setInterval(function(){
+                                        character.y +=y_dis
+                                        if(character.y>character_siteY){
+                                            character.y = character_siteY
+                                            n_jump = 0
+                                            console.log(character.y)
+                                            clearInterval(aaa)
+                                         }
+                                    },300)
+                                }
+                                
                             }
                             if(is_jumping){
-                                y_dis +=gravity //抛物线函数
-                                character.y +=y_dis
-                                if(character.y>character_siteY){
-                                    character.y = character_siteY
-                                    is_jumping = false
-                                }
+                                jumping()
                             }
-                            //
                             stage.update();
                         }
                 }
             }()
+            //现在的问题是掉不下来
     </script>
 </body>
 </html>
